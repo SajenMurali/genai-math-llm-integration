@@ -17,62 +17,72 @@ Integrate the function into an LLM-based chat completion system with function-ca
 ```
 import os
 import openai
+import json
 from dotenv import load_dotenv, find_dotenv
+
 _ = load_dotenv(find_dotenv()) # read local .env file
 openai.api_key = os.environ['OPENAI_API_KEY']
 ```
 
 ```
-# Function to convert Celsius to Fahrenheit
-def convert_c_to_f(celsius):
-    """Convert Celsius to Fahrenheit"""
+def calculate_cylinder_volume(radius, height):
+    """Calculate Volume of Cylinder"""
     try:
-        celsius_float = float(celsius)
-        fahrenheit = (celsius_float * 9/5) + 32
-        conversion_info = {
-            "celsius": celsius,
-            "fahrenheit": round(fahrenheit, 2),
-            "formula": "F = (C * 9/5) + 32",
-            "unit_from": "celsius",
-            "unit_to": "fahrenheit"
+        r = float(radius)
+        h = float(height)
+        volume = 3.1416 * r * r * h
+        volume_info = {
+            "radius": radius,
+            "height": height,
+            "volume": round(volume, 2),
+            "formula": "V = π r^2 h",
+            "unit": "cubic units"
         }
-        return json.dumps(conversion_info)
+        return json.dumps(volume_info)
     except ValueError:
-        return json.dumps({"error": "Invalid input. Please provide a valid number."})
+        return json.dumps({"error": "Invalid input. Please provide valid numbers."})
 
 ```
 
 ```
 functions = [
     {
-        "name": "convert_c_to_f",
-        "description": "Convert Celsius to Fahrenheit",
+        "name": "calculate_cylinder_volume",
+        "description": "Calculate Volume of Cylinder",
         "parameters": {
             "type": "object",
             "properties": {
-                "celsius": {
+                "radius": {
                     "type": "string",
-                    "description": "The temperature in Celsius to convert to Fahrenheit, e.g. 0, 36.6, 100",
+                    "description": "Radius of the cylinder"
                 },
+                "height": {
+                    "type": "string",
+                    "description": "Height of the cylinder"
+                }
             },
-            "required": ["celsius"],
+            "required": ["radius", "height"],
         },
     }
 ]
 
 ```
 ```
+# ✅ Runtime input from user
+radius_input = input("Enter radius: ")
+height_input = input("Enter height: ")
+
 messages = [
     {
         "role": "user",
-        "content": "Convert 37 Celsius to Fahrenheit"
+        "content": f"Find volume of cylinder with radius {radius_input} and height {height_input}"
     }
 ]
 
 ```
 ```
-# Step 1: Ask the LLM
 response = openai.ChatCompletion.create(
+    
     model="gpt-3.5-turbo",
     messages=messages,
     functions=functions,
@@ -81,25 +91,23 @@ response = openai.ChatCompletion.create(
 
 ```
 ```
-# Step 2: Extract function call arguments
-args = json.loads(response["choices"][0]["message"]['function_call']['arguments'])
-observation = convert_c_to_f(args["celsius"])
+args = json.loads(response["choices"][0]["message"]["function_call"]["arguments"])
+observation = calculate_cylinder_volume(args["radius"], args["height"])
+
 
 ```
 ```
-# Step 3: Append function call + result to conversation
 messages.append(response["choices"][0]["message"])
 messages.append(
     {
         "role": "function",
-        "name": "convert_c_to_f",
+        "name": "calculate_cylinder_volume",
         "content": observation,
     }
 )
 
 ```
 ```
-# Step 4: Final LLM response
 final_response = openai.ChatCompletion.create(
     model="gpt-3.5-turbo",
     messages=messages,
@@ -112,9 +120,6 @@ print(final_response["choices"][0]["message"]["content"])
 
 
 ### OUTPUT:
-
-<img width="581" height="42" alt="image" src="https://github.com/user-attachments/assets/5e8aea23-eb2f-4b60-b0bf-fe1b44967f52" />
-
 
 ### RESULT:
 Hence, the Python program to design and implement a Python function for converting Celsius to Fahrenheit, integrating it with a chat completion system utilizing the function-calling feature of a large language model (LLM), is written successfully and executed.
