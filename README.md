@@ -120,6 +120,7 @@ print(final_response["choices"][0]["message"]["content"])
 
 
 ### OUTPUT:
+![image alt](https://github.com/SajenMurali/genai-math-llm-integration/blob/7069d22e021d98b241ee7416681ddcb94d977322/Screenshot%202026-03-15%20202633.png)
 
 ### RESULT:
 Hence, the Python program to design and implement a Python function for converting Celsius to Fahrenheit, integrating it with a chat completion system utilizing the function-calling feature of a large language model (LLM), is written successfully and executed.
